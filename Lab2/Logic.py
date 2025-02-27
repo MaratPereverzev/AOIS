@@ -43,9 +43,9 @@ class LogicExpression:
         stackTokens.append(exp[i])
         
     for token in reversed(stackTokens):
-      if token == -1:
+      if LogicExpression.tokens[token] == -1:
         raise SyntaxError("Added an extra (")
-      elif token == -2:
+      elif LogicExpression.tokens[token] == -2:
         raise SyntaxError("Added an extra )")
       else:
         result += str(token)
@@ -103,7 +103,7 @@ class LogicExpression:
         operationResult = int(first or second)
       elif char == "@":
         first, second = valuesStack.pop(), valuesStack.pop()
-        operationResult = 0 if first == 1 and second == 0 else 1
+        operationResult = 0 if second == 1 and first == 0 else 1
       elif char == "~":
         first, second = valuesStack.pop(), valuesStack.pop()
         operationResult = 1 if first == second else 0
@@ -199,21 +199,67 @@ class LogicExpression:
     variablesCount = len(variables)
     binary = "0" * variablesCount
     
-    variables.append("F")
+    operations = LogicExpression.getPossibleOperations(exp)
+    for operation in operations:
+      variables.append(operation)
+      
     header = " | ".join(variables)
     
     print(header)
     print("-"*len(header))
     while len(binary) <= variablesCount:
-      expResult = LogicExpression.result(exp, *binary)
       row = " | ".join(binary)
+      operationResults = []
       
-      print(row, "|", expResult)
+      for operation in operations:
+        currExpResult = LogicExpression.result(operation, *binary)
+        operationResults.append(str(currExpResult))
+        row += " | " + str(currExpResult) + " " * (len(operation) - 1)
+
+      print(row)
       
       binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
   
-print(LogicExpression.toPolishNotation("(A | B) & !C"))
-print(LogicExpression.buildCNF("(A | B) & !C"))
-print(LogicExpression.buildDNF("(A | B) & !C"))
-print(LogicExpression.getForms("(A | B) & !C"))
-LogicExpression.printTruthTable("(A | B) & !C")
+  @staticmethod
+  def getPossibleOperations(exp: str) -> List[str]:
+    valuesStack = []
+    operations = []
+    polish = LogicExpression.toPolishNotation(exp)
+    
+    for char in polish:
+      operation = ""
+      if char == " ":
+        continue
+      if char.isalpha():
+        valuesStack.append(char)
+        continue
+        
+      elif char == "!":
+        tempValue = valuesStack.pop()
+        operation = f"!{tempValue}"
+      elif char == "&":
+        first, second = valuesStack.pop(), valuesStack.pop()
+        operation = f"{second} & {first}"
+      elif char == "|":
+        first, second = valuesStack.pop(), valuesStack.pop()
+        operation = f"({second} | {first})"
+      elif char == "@":
+        first, second = valuesStack.pop(), valuesStack.pop()
+        operation = f"({second} -> {first})"
+      elif char == "~":
+        first, second = valuesStack.pop(), valuesStack.pop()
+        operation = f"({second} ~ {first})"
+      operations.append(operation)
+      valuesStack.append(operation)
+
+    return operations
+  
+#print(LogicExpression.toPolishNotation("(A | B) & !C"))
+#print(LogicExpression.buildCNF("(A | B) & !C"))
+#print(LogicExpression.buildDNF("(A | B) & !C"))
+#print(LogicExpression.getForms("(A | B) & !C"))
+#LogicExpression.printTruthTable("(A | B) & !C")
+#print(LogicExpression.getPossibleOperations("A | B"))
+#print(LogicExpression.toPolishNotation("(A | B"))
+print(LogicExpression.getForms("A & B"))
+print(LogicExpression.printTruthTable(" A & B"))
