@@ -1,4 +1,4 @@
-#from ..Lab1.Binary import Binary
+from Lab1.Binary import Binary
 from typing import List
 
 class LogicExpression:
@@ -113,34 +113,6 @@ class LogicExpression:
     return valuesStack[0]
   
   @staticmethod
-  def buildCNF(exp: str) -> str:
-    polish = LogicExpression.toPolishNotation(exp)
-    variables = LogicExpression._variables(polish)
-    variablesCount = len(variables)
-    binary = "0" * variablesCount
-    
-    cnfExpressions = []
-    
-    while len(binary) <= variablesCount:
-      expResult = LogicExpression.result(exp, *binary)
-      
-      if expResult == 0:
-        binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
-        continue
-      
-      binaryList = list(binary)
-      currValues = []
-      
-      for i in range(variablesCount):
-        currValues.append(f"!{variables[i]}" if binaryList[i] == "0" else variables[i])
-          
-      cnfExpressions.append(f"({' & '.join(currValues)})")
-      
-      binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
-      
-    return " | ".join(cnfExpressions)
-  
-  @staticmethod
   def buildDNF(exp: str) -> str:
     polish = LogicExpression.toPolishNotation(exp)
     variables = LogicExpression._variables(polish)
@@ -152,8 +124,36 @@ class LogicExpression:
     while len(binary) <= variablesCount:
       expResult = LogicExpression.result(exp, *binary)
       
+      if expResult == 0:
+        binary = Binary._sum(binary, "1").zfill(variablesCount)
+        continue
+      
+      binaryList = list(binary)
+      currValues = []
+      
+      for i in range(variablesCount):
+        currValues.append(f"!{variables[i]}" if binaryList[i] == "0" else variables[i])
+          
+      cnfExpressions.append(f"({' & '.join(currValues)})")
+      
+      binary = Binary._sum(binary, "1").zfill(variablesCount)
+      
+    return " | ".join(cnfExpressions)
+  
+  @staticmethod
+  def buildCNF(exp: str) -> str:
+    polish = LogicExpression.toPolishNotation(exp)
+    variables = LogicExpression._variables(polish)
+    variablesCount = len(variables)
+    binary = "0" * variablesCount
+    
+    cnfExpressions = []
+    
+    while len(binary) <= variablesCount:
+      expResult = LogicExpression.result(exp, *binary)
+      
       if expResult == 1:
-        binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
+        binary = Binary._sum(binary, "1").zfill(variablesCount)
         continue
       
       binaryList = list(binary)
@@ -164,7 +164,7 @@ class LogicExpression:
           
       cnfExpressions.append(f"({' | '.join(currValues)})")
       
-      binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
+      binary = Binary._sum(binary, "1").zfill(variablesCount)
       
     return " & ".join(cnfExpressions)
   
@@ -184,11 +184,11 @@ class LogicExpression:
       
       indexForm += str(expResult)
       if expResult == 0:
-        disj.append(str(int(binary,2)))
+        disj.append(str(Binary.binaryToInt(binary)))
       else:
-        conj.append(str(int(binary,2)))
+        conj.append(str(Binary.binaryToInt(binary)))
       
-      binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
+      binary = Binary._sum(binary, "1").zfill(variablesCount)
       
     return {"indexForm": indexForm, "numberForm" : {"conj": f"({", ".join(conj)}) &", "disj": f"({", ".join(disj)}) |"}}
   
@@ -218,7 +218,7 @@ class LogicExpression:
 
       print(row)
       
-      binary = bin(int(binary, 2) + 1)[2:].zfill(variablesCount)
+      binary = Binary._sum(binary, "1").zfill(variablesCount)
   
   @staticmethod
   def getPossibleOperations(exp: str) -> List[str]:
@@ -261,5 +261,5 @@ class LogicExpression:
 #LogicExpression.printTruthTable("(A | B) & !C")
 #print(LogicExpression.getPossibleOperations("A | B"))
 #print(LogicExpression.toPolishNotation("(A | B"))
-print(LogicExpression.getForms("A & B"))
-print(LogicExpression.printTruthTable(" A & B"))
+#print(LogicExpression.getForms("A & B"))
+#print(LogicExpression.printTruthTable(" A & B"))

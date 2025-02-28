@@ -311,6 +311,6 @@ class Binary:
         return sign + exponent_bin + mantissa_sum
     
 
-print(f'Первое число: {Binary.toIEEE754(16.625)}')
-print(f'Второе число: {Binary.toIEEE754(1.5)}')
-print(f'Сумма {Binary.sumIEEE754(Binary.toIEEE754(16.625),Binary.toIEEE754(1.5))}')
+#print(f'Первое число: {Binary.toIEEE754(16.625)}')
+#print(f'Второе число: {Binary.toIEEE754(1.5)}')
+#print(f'Сумма {Binary.sumIEEE754(Binary.toIEEE754(16.625),Binary.toIEEE754(1.5))}')
