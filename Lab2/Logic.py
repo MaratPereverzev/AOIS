@@ -258,8 +258,8 @@ class LogicExpression:
     return operations
   
 #print(LogicExpression.toPolishNotation("(A | B) & !C"))
-#print(LogicExpression.buildCNF("A & B"))
-#print(LogicExpression.buildDNF("A & B"))
+#print(LogicExpression.buildCNF("(A | B) & !C"))
+#print(LogicExpression.buildDNF("(A | B) & !C"))
 #print(LogicExpression.getForms("(A | B) & !C"))
 #LogicExpression.printTruthTable("!A->!(B|!C)")
 #print(LogicExpression.getPossibleOperations("A | B"))
