@@ -34,20 +34,20 @@ class TestLogicExpression(unittest.TestCase):
 
     def test_buildCNF(self):
         # Тест построения КНФ
-        self.assertEqual(LogicExpression.buildCNF("A & B"), "(A & B)")
-        self.assertEqual(LogicExpression.buildCNF("A | B"), "(!A & B) | (A & !B) | (A & B)")
+        self.assertEqual(LogicExpression.buildCNF("A & B"), "(A | B) & (A | !B) & (!A | B)")
+        self.assertEqual(LogicExpression.buildCNF("A | B"), "(A | B)")
         self.assertEqual(LogicExpression.buildCNF("!A"), "(!A)")
 
     def test_buildDNF(self):
         # Тест построения ДНФ
-        self.assertEqual(LogicExpression.buildDNF("A & B"), "(A | B) & (A | !B) & (!A | B)")
-        self.assertEqual(LogicExpression.buildDNF("A | B"), "(A | B)")
+        self.assertEqual(LogicExpression.buildDNF("A & B"), "(A & B)")
+        self.assertEqual(LogicExpression.buildDNF("A | B"), "(!A & B) | (A & !B) | (A & B)")
         self.assertEqual(LogicExpression.buildDNF("!A"), "(!A)")
 
     def test_getForms(self):
         # Тест получения индексной и числовой форм
         result = LogicExpression.getForms("A & B")
-        self.assertEqual(result["indexForm"], "0001")
+        self.assertEqual(result["indexForm"], 1)
         self.assertEqual(result["numberForm"]["conj"], "(3) &")
         self.assertEqual(result["numberForm"]["disj"], "(0, 1, 2) |")
 

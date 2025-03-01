@@ -13,6 +13,9 @@ class LogicExpression:
   }
   acceptedTokens = ["(", ")", "!", "&", "|", "@", "~"]
   
+  AND_SEPARATOR = " & "
+  OR_SEPARATOR = " | "
+  
   @staticmethod
   def toPolishNotation(exp: str) -> str:
     exp = exp.replace("->","@")
@@ -21,7 +24,7 @@ class LogicExpression:
     result = ""
     
     for i in range(len(exp)):
-      if exp[i].isalpha():
+      if exp[i].isalpha() or exp[i].isdigit():
         result += exp[i]
         continue
       elif exp[i] == " ":
@@ -71,10 +74,10 @@ class LogicExpression:
     return LogicExpression.calculateExp(polish)
   
   @staticmethod
-  def _variables(polish: str) -> List[int]:
+  def _variables(exp: str) -> List[int]:
     variables = []
     
-    for char in polish:
+    for char in exp:
       if char.isalpha() and not char in variables:
         variables.append(char)
         
@@ -120,12 +123,12 @@ class LogicExpression:
     binary = "0" * variablesCount
     
     cnfExpressions = []
-    
-    while len(binary) <= variablesCount:
+    while Binary.binaryToInt(binary,False) <= Binary.binaryToInt(variablesCount * "1", False):
       expResult = LogicExpression.result(exp, *binary)
       
       if expResult == 0:
         binary = Binary._sum(binary, "1").zfill(variablesCount)
+
         continue
       
       binaryList = list(binary)
@@ -184,13 +187,13 @@ class LogicExpression:
       
       indexForm += str(expResult)
       if expResult == 0:
-        disj.append(str(Binary.binaryToInt(binary)))
+        disj.append(str(Binary.binaryToInt(binary, False)))
       else:
-        conj.append(str(Binary.binaryToInt(binary)))
+        conj.append(str(Binary.binaryToInt(binary, False)))
       
       binary = Binary._sum(binary, "1").zfill(variablesCount)
       
-    return {"indexForm": indexForm, "numberForm" : {"conj": f"({", ".join(conj)}) &", "disj": f"({", ".join(disj)}) |"}}
+    return {"indexForm": Binary.binaryToInt(indexForm, False), "numberForm" : {"conj": f"({", ".join(conj)}) &", "disj": f"({", ".join(disj)}) |"}}
   
   @staticmethod
   def printTruthTable(exp: str):
@@ -255,11 +258,11 @@ class LogicExpression:
     return operations
   
 #print(LogicExpression.toPolishNotation("(A | B) & !C"))
-#print(LogicExpression.buildCNF("(A | B) & !C"))
-#print(LogicExpression.buildDNF("(A | B) & !C"))
+#print(LogicExpression.buildCNF("A & B"))
+#print(LogicExpression.buildDNF("A & B"))
 #print(LogicExpression.getForms("(A | B) & !C"))
-#LogicExpression.printTruthTable("(A | B) & !C")
+#LogicExpression.printTruthTable("!A->!(B|!C)")
 #print(LogicExpression.getPossibleOperations("A | B"))
 #print(LogicExpression.toPolishNotation("(A | B"))
-#print(LogicExpression.getForms("A & B"))
+#print(LogicExpression.getForms("!A->!(B|!C)"))
 #print(LogicExpression.printTruthTable(" A & B"))
