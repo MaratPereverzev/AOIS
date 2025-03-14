@@ -342,6 +342,7 @@ class LogicExpressionExtended (LogicExpression):
               term.append(f"{var}" if bit == '1' else f"~{var}")
           expressions.add(" & ".join(sorted(term)))
       
+      print(groups)
       #return " | ".join(sorted(expressions)) if sop else " & ".join(sorted(expressions))
       return LogicExpressionExtended.cnfWithQuine(exp) if not sop else LogicExpressionExtended.dnfWithQuine(exp)
 
@@ -354,13 +355,16 @@ class LogicExpressionExtended (LogicExpression):
     return LogicExpressionExtended.minimize_expression(exp, True)
       
 
-#print(LogicExpression.buildCNF("(A | B) & C"))
-#print(LogicExpression.buildDNF("(A | B) & C"))
-#LogicExpression.printTruthTable("A | !B")
-#print(LogicExpressionExtended.cnfWithQuine("(A | B) & (C | !D)", "таблично-расчётный"))
-#print(LogicExpressionExtended.cnfWithQuine("(A | B) & (C | !D)", "расчётный"))
+#print("СКНФ и CДНФ\n")
+#print("СКНФ:", LogicExpression.buildCNF("(A | B) & C"))
+#print("СДНФ:", LogicExpression.buildDNF("(A | B) & C"))
+#print("-"*40,"\nТаблица истинности\n\n")
+#LogicExpression.printTruthTable("(A | B) & C")
+#print("-"*40,"\nМинимизация СКНФ\n\n")
+#print(LogicExpressionExtended.cnfWithQuine("(A | B) & C", "таблично-расчётный"))
+#print(LogicExpressionExtended.cnfWithQuine("(A | B) & C", "расчётный"))
+#print(LogicExpressionExtended.cnfWithCarno("(A | B) & C"))
+#print("-"*40,"\nМинимизация СДНФ\n\n")
 #print(LogicExpressionExtended.dnfWithQuine("(A | B) & C", "таблично-расчётный"))
 #print(LogicExpressionExtended.dnfWithQuine("(A | B) & C", "расчётный"))
-#print(LogicExpressionExtended.dnfWithQuine("(A | B) & C"))
-#print(LogicExpressionExtended.cnfWithCarno("(A | B) & C"))
 #print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))

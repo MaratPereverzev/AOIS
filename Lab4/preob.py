@@ -21,26 +21,26 @@ def get_sknf_expression(table):
 # Значения функции: F(A, B)
 truth_table = [
     ["A", "B", "C", "D", "R"],
-    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1],
     [0, 0, 0, 1, 1],
     [0, 0, 1, 0, 0],
-    [0, 0, 1, 1, 1],
+    [0, 0, 1, 1, 0],
     [0, 1, 0, 0, 0],
-    [0, 1, 0, 1, 1],
+    [0, 1, 0, 1, 0],
     [0, 1, 1, 0, 0],
-    [0, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0],
+    [0, 1, 1, 1, 0],
+    [1, 0, 0, 0, 1],
     [1, 0, 0, 1, 1],
-    [1, 0, 1, 0, 0],
+    [1, 0, 1, 0, 1],
     [1, 0, 1, 1, 1],
     [1, 1, 0, 0, 0],
-    [1, 1, 0, 1, 1],
+    [1, 1, 0, 1, 0],
     [1, 1, 1, 0, 0],
-    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 0],
 ]
 
-sknf_expression = LogicExpressionExtended.cnfWithQuine(get_sknf_expression(truth_table), isAlradyKNF=True)
-print(f"Логическое выражение в СКНФ: {sknf_expression}")
+sdnf_expression = LogicExpressionExtended.dnfWithCarno(get_sknf_expression(truth_table))
+print(f"Логическое выражение в СДНФ: {sdnf_expression}")
 
 '''
     ["x1", "x2", "x3", "x4", "y1", "y2", "y3", "y4"],
