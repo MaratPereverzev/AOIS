@@ -335,13 +335,13 @@ class LogicExpressionExtended (LogicExpression):
 
   @staticmethod
   def cnfWithCarno(exp: str):
-    return LogicExpressionExtended.minimizeExpression(exp, False)
+    return LogicExpressionExtended.minimizeExpression(exp)
   
   @staticmethod
   def dnfWithCarno(exp: str):
-    return LogicExpressionExtended.minimizeExpression(exp, True)
+    return LogicExpressionExtended.minimizeExpression(exp)
 
-print(LogicExpressionExtended.minimizeExpression("(A | B) & C"))
+print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))
 #print("СКНФ и CДНФ\n")
 #print("СКНФ:", LogicExpression.buildCNF("(!A & B) | (!(C | D))"))
 #print("СДНФ:", LogicExpression.buildDNF("(!A & B) | (!(C | D))"))
