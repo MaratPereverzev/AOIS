@@ -75,6 +75,7 @@
     <comp lib="1" loc="(340,350)" name="NOT Gate">
       <a name="facing" val="west"/>
     </comp>
+    <comp lib="1" loc="(370,440)" name="OR Gate"/>
     <comp lib="4" loc="(460,250)" name="T Flip-Flop">
       <a name="appearance" val="logisim_evolution"/>
     </comp>
@@ -100,15 +101,15 @@
       <a name="font" val="SansSerif bold 13"/>
       <a name="text" val="h3"/>
     </comp>
-    <comp lib="6" loc="(674,505)" name="Text">
+    <comp lib="6" loc="(670,505)" name="Text">
       <a name="font" val="SansSerif bold 13"/>
       <a name="text" val="q1"/>
     </comp>
-    <comp lib="6" loc="(675,264)" name="Text">
+    <comp lib="6" loc="(675,260)" name="Text">
       <a name="font" val="SansSerif bold 13"/>
       <a name="text" val="q3"/>
     </comp>
-    <comp lib="6" loc="(676,386)" name="Text">
+    <comp lib="6" loc="(675,385)" name="Text">
       <a name="font" val="SansSerif bold 13"/>
       <a name="text" val="q2"/>
     </comp>
@@ -119,27 +120,31 @@
     <wire from="(150,540)" to="(450,540)"/>
     <wire from="(170,300)" to="(170,440)"/>
     <wire from="(170,300)" to="(210,300)"/>
-    <wire from="(170,440)" to="(170,460)"/>
+    <wire from="(170,440)" to="(170,480)"/>
     <wire from="(170,440)" to="(250,440)"/>
-    <wire from="(170,460)" to="(570,460)"/>
+    <wire from="(170,480)" to="(320,480)"/>
     <wire from="(210,340)" to="(210,350)"/>
     <wire from="(210,350)" to="(340,350)"/>
     <wire from="(270,320)" to="(290,320)"/>
-    <wire from="(300,420)" to="(450,420)"/>
+    <wire from="(300,420)" to="(320,420)"/>
+    <wire from="(320,460)" to="(320,480)"/>
+    <wire from="(320,480)" to="(570,480)"/>
     <wire from="(340,300)" to="(450,300)"/>
     <wire from="(370,350)" to="(570,350)"/>
+    <wire from="(370,440)" to="(450,440)"/>
     <wire from="(410,230)" to="(410,260)"/>
     <wire from="(410,260)" to="(410,380)"/>
     <wire from="(410,260)" to="(450,260)"/>
     <wire from="(410,380)" to="(410,500)"/>
     <wire from="(410,380)" to="(450,380)"/>
     <wire from="(410,500)" to="(450,500)"/>
+    <wire from="(450,420)" to="(450,440)"/>
     <wire from="(510,260)" to="(640,260)"/>
     <wire from="(510,380)" to="(570,380)"/>
     <wire from="(510,500)" to="(570,500)"/>
     <wire from="(570,350)" to="(570,380)"/>
     <wire from="(570,380)" to="(640,380)"/>
-    <wire from="(570,460)" to="(570,500)"/>
+    <wire from="(570,480)" to="(570,500)"/>
     <wire from="(570,500)" to="(640,500)"/>
     <wire from="(90,540)" to="(150,540)"/>
   </circuit>

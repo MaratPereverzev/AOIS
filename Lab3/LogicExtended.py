@@ -1,6 +1,8 @@
 from Lab2.Logic import LogicExpression
 from typing import List
 from itertools import product
+from Lab1.Binary import Binary
+import math
 
 class LogicExpressionExtended (LogicExpression):
   @staticmethod
@@ -67,6 +69,9 @@ class LogicExpressionExtended (LogicExpression):
     if not bondableIteration and not callRecursive and notFirstIteration:
       nextConstituent.append(constituents[-1])
     
+    if len(nextConstituent) == 0 and not notFirstIteration:
+      return constituents
+    
     if callRecursive: 
       nextConstituent = LogicExpressionExtended._QuineAlgorithm(nextConstituent, True, forCNF)
       
@@ -94,10 +99,11 @@ class LogicExpressionExtended (LogicExpression):
   @staticmethod
   def dnfWithQuine(exp: str, variant: str = "расчётный") -> str:
     formulas = LogicExpression.buildDNF(exp).replace("(","").replace(")","").split(LogicExpressionExtended.OR_SEPARATOR)
-      
+    
     constituents = LogicExpressionExtended._QuineAlgorithm(formulas, False, False)
     constituents = LogicExpressionExtended._removeSimilarConstituents(constituents)
     tempResult = LogicExpressionExtended.OR_SEPARATOR.join(constituents)
+    
     constituents = LogicExpressionExtended._withCalculativeTable(formulas, constituents, False) if variant == "таблично-расчётный" else LogicExpressionExtended._withCalculative(constituents, tempResult, False)
       
     return tempResult
@@ -192,179 +198,159 @@ class LogicExpressionExtended (LogicExpression):
     if n == 0:
         return [[]]
     if n == 1:
-        return [[0], [1]]
+        return [["0"], ["1"]]
     
     previous_gray_code = LogicExpressionExtended.generateGray(n - 1)
     
-    gray_code = [ [0] + code for code in previous_gray_code ]
-    gray_code += [ [1] + code for code in reversed(previous_gray_code) ]
+    gray_code = [ ["0"] + code for code in previous_gray_code ]
+    gray_code += [ ["1"] + code for code in reversed(previous_gray_code) ]
     
     return gray_code
   
   @staticmethod
-  def create_karnaugh_map(exp):
-    variables = LogicExpression._variables(exp)
+  def buildFormulaFromGroups(groups: List[List[str]], variables: List[str], isCNF = False):
+    formulas = []
+    similarVariables = []
+    for group in groups:
+      similarVariablesList = list(group[0])
+    
+      for value in group:
+        for i in range(0, len(value)):
+          if value[i] != similarVariablesList[i]: similarVariablesList[i] = "_"
+         
+      similarVariables.append(similarVariablesList)
+      
+    for variable in similarVariables:
+      tempFormulaList = []
+      for i in range(len(variable)):
+        if variable[i] == '1': tempFormulaList.append(f'!{variables[i]}' if isCNF else variables[i])
+        elif variable[i] == '0': tempFormulaList.append(variables[i] if isCNF else f'!{variables[i]}')
+        
+      formulas.append(LogicExpressionExtended.AND_SEPARATOR.join(tempFormulaList))
+      
+    return LogicExpressionExtended.OR_SEPARATOR.join(formulas)
+  
+  @staticmethod
+  def minimizeExpression(exp: str):    
+    variables = LogicExpressionExtended._variables(exp)
+    
+    carnoTable = LogicExpressionExtended.makeCarnoTable(exp)
+
+    groups = LogicExpressionExtended.findGroups(exp, carnoTable)
+    
+    formula = LogicExpressionExtended.buildFormulaFromGroups(groups, variables)
+    
+    return formula
+   
+  @staticmethod
+  def findRectangleGroups(carnoTable: List[List[int]], maxGroupSize: int, grayHorizontal: List[str], grayVertical: List[str]):
+    groups = []
+    visited = set()
+    rows = len(carnoTable)
+    cols = len(carnoTable[0]) if rows > 0 else 0
+    
+    # Все возможные размеры прямоугольников (2^n × 2^m)
+    sizes = []
+    size = maxGroupSize
+    while size >= 1:
+        sizes.append(size)
+        size //= 2
+    
+    # Проверяем все возможные комбинации размеров
+    for height in sizes:
+        for width in sizes:
+            # Пропускаем слишком большие размеры
+            if height > rows or width > cols:
+                continue
+                
+            # Проверяем все возможные позиции прямоугольника
+            for i in range(rows - height + 1):
+                for j in range(cols - width + 1):
+                    # Проверяем, состоит ли прямоугольник из единиц
+                    all_ones = True
+                    current_group = []
+                    
+                    for x in range(i, i + height):
+                        for y in range(j, j + width):
+                            if carnoTable[x][y] != 1:
+                                all_ones = False
+                                break
+                            current_group.append(grayVertical[x] + grayHorizontal[y])
+                        if not all_ones:
+                            break
+                    
+                    # Если нашли прямоугольник и есть новые переменные
+                    if all_ones:
+                        new_vars = [var for var in current_group if var not in visited]
+                        if new_vars:
+                            groups.append(current_group)
+                            visited.update(new_vars)
+    
+    return groups
+  
+  @staticmethod
+  def findGroups(exp: str, carnoTable: str):
+    carnoTableExtended = [row * 2 for row in carnoTable]
+    carnoTableExtended *= 2
+    
+    variables = LogicExpressionExtended._variables(exp)
     variablesCount = len(variables)
     
-    gray_code = LogicExpressionExtended.generateGray(variablesCount)
-
-    rows = 2 ** (variablesCount // 2)
-    cols = 2 ** (variablesCount - variablesCount // 2)
-    karnaugh_map = [[0 for _ in range(cols)] for _ in range(rows)]
+    grayHorizontal = LogicExpressionExtended.generateGray(variablesCount // 2 + (variablesCount % 2))
+    grayHorizontal = ["".join(code) for code in grayHorizontal]
     
-    for i in range(rows):
-        for j in range(cols):
-            combined_bits = gray_code[i * cols + j]
-            karnaugh_map[i][j] = LogicExpressionExtended.result(exp, *combined_bits)
-    return karnaugh_map
+    grayVertical = LogicExpressionExtended.generateGray(variablesCount // 2)
+    grayVertical = ["".join(code) for code in grayVertical]
 
+    groups = []
+    
+    maxGroupSize = 2 ** (variablesCount - 1)
+    
+    groups.extend(LogicExpressionExtended.findRectangleGroups(carnoTable, maxGroupSize, grayHorizontal, grayVertical))
+    
+    return groups
+        
+    
   @staticmethod
-  def generate_gray_code(n: int) -> list:
-    """Генерирует код Грея для n битов."""
-    if n == 0:
-        return ['']
-    lower_gray = LogicExpressionExtended.generate_gray_code(n - 1)
-    return ['0' + code for code in lower_gray] + ['1' + code for code in reversed(lower_gray)]
-  @staticmethod
-  def _get_binary(n: int, variables: int) -> str:
-    """Возвращает двоичное представление числа n с заданным количеством переменных."""
-    return format(n, f'0{variables}b')
-  @staticmethod
-  def _get_common_variables(group, gray_rows, gray_cols, variables):
-    """Находит общие переменные в группе ячеек, используя код Грея."""
-    common = []
-    # Получаем коды Грея для всех ячеек в группе
-    gray_codes = []
-    for row, col in group:
-        row_code = gray_rows[row]  # Код Грея для строки
-        col_code = gray_cols[col]  # Код Грея для столбца
-        gray_codes.append(row_code + col_code)  # Объединяем коды строк и столбцов
-    # Проверяем, что все коды Грея в группе не одинаковы
-    if all(code == gray_codes[0] for code in gray_codes):
-        return common  # Если все коды одинаковы, возвращаем пустой список
-      # Проверяем вертикальные переменные (строки)
-    for i in range(len(gray_rows[0])):  # Перебираем биты вертикального кода
-      bits = set()
-      for code in gray_codes:
-        bits.add(code[i])  # Добавляем значение бита для каждой ячейки
-      if len(bits) == 1:  # Если все значения одинаковы
-        common.append((i, bits.pop()))  # Добавляем общую переменную (индекс, значение)
-
-      # Проверяем горизонтальные переменные (столбцы)
-      for i in range(len(gray_cols[0])):  # Перебираем биты горизонтального кода
-        bits = set()
-        for code in gray_codes:
-          bits.add(code[len(gray_rows[0]) + i])  # Добавляем значение бита для каждой ячейки
-        if len(bits) == 1:  # Если все значения одинаковы
-          common.append((len(gray_rows[0]) + i, bits.pop()))  # Добавляем общую переменную (индекс, значение)
-
-    return common
-
-  @staticmethod
-  def _find_groups(kmap, value):
-      """Находит все возможные прямоугольные группы ячеек с заданным значением, размер которых равен степени двойки."""
-      rows, cols = len(kmap), len(kmap[0])
-      groups = []  # Список для хранения всех возможных групп
-
-      def is_valid_group(cells):
-          """Проверяет, все ли клетки в группе соответствуют значению."""
-          return all(kmap[r][c] == value for r, c in cells)
-
-      def is_power_of_two(n):
-          """Проверяет, является ли число степенью двойки."""
-          return (n != 0) and (n & (n - 1)) == 0
-
-      def get_rectangular_group(start_row, start_col, height, width):
-          """Возвращает прямоугольную группу ячеек, начиная с (start_row, start_col)."""
-          group = []
-          for i in range(height):
-              for j in range(width):
-                  r = (start_row + i) % rows  # Учитываем цикличность
-                  c = (start_col + j) % cols  # Учитываем цикличность
-                  group.append((r, c))
-          return group
-
-      # Перебираем все возможные размеры групп, которые являются степенями двойки
-      for height in range(1, rows + 1):
-          for width in range(1, cols + 1):
-              # Проверяем, что размер группы равен степени двойки
-              if is_power_of_two(height * width):
-                  # Перебираем все возможные начальные позиции для групп
-                  for i in range(rows):
-                      for j in range(cols):
-                          # Получаем группу
-                          group = get_rectangular_group(i, j, height, width)
-                          # Проверяем, что группа валидна
-                          if is_valid_group(group):
-                              groups.append(group)
-
-      # Сортируем группы по размеру (от больших к меньшим)
-      groups.sort(key=lambda x: len(x), reverse=True)
-
-      # Выбираем минимальное количество групп, покрывающих все ячейки с нужным значением
-      selected_groups = []
-      covered = set()  # Множество для отслеживания покрытых ячеек
-      target_cells = set((r, c) for r in range(rows) for c in range(cols) if kmap[r][c] == value)
-
-      for group in groups:
-          # Проверяем, добавляет ли группа новые ячейки
-          new_cells = set(group) - covered
-          if new_cells:
-              selected_groups.append(group)
-              covered.update(new_cells)
-          # Если все ячейки покрыты, завершаем
-          if covered == target_cells:
-              break
-
-      return selected_groups
-
-  @staticmethod
-  def minimize_expression(exp, sop=True):
-      """Минимизирует СДНФ (sop=True) или СКНФ (sop=False)."""
-      kmap = LogicExpressionExtended.create_karnaugh_map(exp)
-      variables = len(LogicExpressionExtended._variables(exp))
-      
-      value = 1 if sop else 0
-      groups = LogicExpressionExtended._find_groups(kmap, value)
-      expressions = set()
-
-      # Генерируем код Грея для строк и столбцов
-      gray_rows = LogicExpressionExtended.generate_gray_code(variables // 2)  # Коды Грея для строк
-      gray_cols = LogicExpressionExtended.generate_gray_code(variables - variables // 2)  # Коды Грея для столбцов
-
-      for group in groups:
-          common = LogicExpressionExtended._get_common_variables(group, gray_rows, gray_cols, variables)
-          if not common:
-              continue
-          term = []
-          for var_index, bit in common:
-              var = chr(65 + var_index)  # A, B, C, ...
-              term.append(f"{var}" if bit == '1' else f"~{var}")
-          expressions.add(" & ".join(sorted(term)))
-      
-      print(groups)
-      #return " | ".join(sorted(expressions)) if sop else " & ".join(sorted(expressions))
-      return LogicExpressionExtended.cnfWithQuine(exp) if not sop else LogicExpressionExtended.dnfWithQuine(exp)
+  def makeCarnoTable(exp: str):
+    variables = LogicExpressionExtended._variables(exp)
+    variablesCount = len(variables)
+    
+    grayHorizontal = LogicExpressionExtended.generateGray(variablesCount // 2 + (variablesCount % 2))
+    grayHorizontal = ["".join(code) for code in grayHorizontal]
+    
+    grayVertical = LogicExpressionExtended.generateGray(variablesCount // 2)
+    grayVertical = ["".join(code) for code in grayVertical]
+    
+    carnoTable = [0] * len(grayVertical)
+    
+    carnoTable = [[0] * len(grayHorizontal) for _ in carnoTable]
+    
+    for i in range(len(grayVertical)):
+      for j in range(len(grayHorizontal)):
+        carnoTable[i][j] = LogicExpressionExtended.result(exp, *grayVertical[i], *grayHorizontal[j])
+        
+    return carnoTable
+    
 
   @staticmethod
   def cnfWithCarno(exp: str):
-    return LogicExpressionExtended.minimize_expression(exp, False)
+    return LogicExpressionExtended.minimizeExpression(exp, False)
   
   @staticmethod
   def dnfWithCarno(exp: str):
-    return LogicExpressionExtended.minimize_expression(exp, True)
-      
+    return LogicExpressionExtended.minimizeExpression(exp, True)
 
+print(LogicExpressionExtended.minimizeExpression("(A | B) & C"))
 #print("СКНФ и CДНФ\n")
-#print("СКНФ:", LogicExpression.buildCNF("(A | B) & C"))
-#print("СДНФ:", LogicExpression.buildDNF("(A | B) & C"))
+#print("СКНФ:", LogicExpression.buildCNF("(!A & B) | (!(C | D))"))
+#print("СДНФ:", LogicExpression.buildDNF("(!A & B) | (!(C | D))"))
 #print("-"*40,"\nТаблица истинности\n\n")
 #LogicExpression.printTruthTable("(A | B) & C")
 #print("-"*40,"\nМинимизация СКНФ\n\n")
 #print(LogicExpressionExtended.cnfWithQuine("(A | B) & C", "таблично-расчётный"))
-#print(LogicExpressionExtended.cnfWithQuine("(A | B) & C", "расчётный"))
 #print(LogicExpressionExtended.cnfWithCarno("(A | B) & C"))
 #print("-"*40,"\nМинимизация СДНФ\n\n")
 #print(LogicExpressionExtended.dnfWithQuine("(A | B) & C", "таблично-расчётный"))
-#print(LogicExpressionExtended.dnfWithQuine("(A | B) & C", "расчётный"))
+#print(LogicExpressionExtended.dnfWithQuine("(!A & B) | (!(C | D))", "расчётный"))
 #print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))
