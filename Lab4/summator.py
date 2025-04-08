@@ -36,14 +36,25 @@ def get_sdnf_expression(table):
 truth_table = [
     ["A", "B", "C", "D"],
     [0, 0, 0, 0],
-    [0, 0, 1, 1],
-    [0, 1, 0, 1],
-    [0, 1, 1, 0],
-    [1, 0, 0, 1],
-    [1, 0, 1, 0],
-    [1, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 1, 0, 0],
+    [0, 1, 1, 1],
+    [1, 0, 0, 0],
+    [1, 0, 1, 1],
+    [1, 1, 0, 1],
     [1, 1, 1, 1],
 ]
+
+'''
+[0, 0, 0, 0, 0],
+[0, 0, 1, 1, 0],
+[0, 1, 0, 1, 0],
+[0, 1, 1, 0, 1],
+[1, 0, 0, 1, 0],
+[1, 0, 1, 0, 1],
+[1, 1, 0, 0, 1],
+[1, 1, 1, 1, 1],
+'''
 
 # Получаем СКНФ
 sknf_expression = get_sknf_expression(truth_table)
@@ -54,5 +65,5 @@ sdnf_expression = get_sdnf_expression(truth_table)
 print(f"Логическое выражение в СДНФ: {sdnf_expression}")
 
 # Преобразуем СДНФ с использованием метода dnfWithCarno
-sdnf_minimized = LogicExpressionExtended.dnfWithCarno(sdnf_expression)
+sdnf_minimized = LogicExpressionExtended.cnfWithCarno(sdnf_expression)
 print(f"Минимизированное логическое выражение в СДНФ: {sdnf_minimized}")
