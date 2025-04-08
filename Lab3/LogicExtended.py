@@ -226,24 +226,24 @@ class LogicExpressionExtended (LogicExpression):
         if variable[i] == '1': tempFormulaList.append(f'!{variables[i]}' if isCNF else variables[i])
         elif variable[i] == '0': tempFormulaList.append(variables[i] if isCNF else f'!{variables[i]}')
         
-      formulas.append(LogicExpressionExtended.AND_SEPARATOR.join(tempFormulaList))
+      formulas.append(f"({(LogicExpressionExtended.OR_SEPARATOR if isCNF else LogicExpressionExtended.AND_SEPARATOR).join(tempFormulaList)})")
       
-    return LogicExpressionExtended.OR_SEPARATOR.join(formulas)
+    return (LogicExpressionExtended.AND_SEPARATOR if isCNF else LogicExpressionExtended.OR_SEPARATOR).join(formulas)
   
   @staticmethod
-  def minimizeExpression(exp: str):    
+  def minimizeExpression(exp: str, isCNF=False):    
     variables = LogicExpressionExtended._variables(exp)
     
     carnoTable = LogicExpressionExtended.makeCarnoTable(exp)
 
-    groups = LogicExpressionExtended.findGroups(exp, carnoTable)
+    groups = LogicExpressionExtended.findGroups(exp, carnoTable, isCNF)
     
-    formula = LogicExpressionExtended.buildFormulaFromGroups(groups, variables)
+    formula = LogicExpressionExtended.buildFormulaFromGroups(groups, variables, isCNF)
     
     return formula
    
   @staticmethod
-  def findRectangleGroups(carnoTable: List[List[int]], maxGroupSize: int, grayHorizontal: List[str], grayVertical: List[str]):
+  def findRectangleGroups(carnoTable: List[List[int]], maxGroupSize: int, grayHorizontal: List[str], grayVertical: List[str], isCNF=False):
     groups = []
     visited = set()
     rows = len(carnoTable)
@@ -272,7 +272,7 @@ class LogicExpressionExtended (LogicExpression):
                     
                     for x in range(i, i + height):
                         for y in range(j, j + width):
-                            if carnoTable[x][y] != 1:
+                            if carnoTable[x][y] != 1 and not isCNF or carnoTable[x][y] != 0 and isCNF:
                                 all_ones = False
                                 break
                             current_group.append(grayVertical[x] + grayHorizontal[y])
@@ -289,7 +289,7 @@ class LogicExpressionExtended (LogicExpression):
     return groups
   
   @staticmethod
-  def findGroups(exp: str, carnoTable: str):
+  def findGroups(exp: str, carnoTable: str, isCNF=False):
     carnoTableExtended = [row * 2 for row in carnoTable]
     carnoTableExtended *= 2
     
@@ -306,7 +306,7 @@ class LogicExpressionExtended (LogicExpression):
     
     maxGroupSize = 2 ** (variablesCount - 1)
     
-    groups.extend(LogicExpressionExtended.findRectangleGroups(carnoTable, maxGroupSize, grayHorizontal, grayVertical))
+    groups.extend(LogicExpressionExtended.findRectangleGroups(carnoTable, maxGroupSize, grayHorizontal, grayVertical, isCNF))
     
     return groups
         
@@ -335,7 +335,7 @@ class LogicExpressionExtended (LogicExpression):
 
   @staticmethod
   def cnfWithCarno(exp: str):
-    return LogicExpressionExtended.minimizeExpression(exp)
+    return LogicExpressionExtended.minimizeExpression(exp, True)
   
   @staticmethod
   def dnfWithCarno(exp: str):
