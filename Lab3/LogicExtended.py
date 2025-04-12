@@ -341,7 +341,7 @@ class LogicExpressionExtended (LogicExpression):
   def dnfWithCarno(exp: str):
     return LogicExpressionExtended.minimizeExpression(exp)
 
-print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))
+#print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))
 #print("СКНФ и CДНФ\n")
 #print("СКНФ:", LogicExpression.buildCNF("(!A & B) | (!(C | D))"))
 #print("СДНФ:", LogicExpression.buildDNF("(!A & B) | (!(C | D))"))

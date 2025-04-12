@@ -1,3 +1,4 @@
+from typing import List
 from Lab3.LogicExtended import LogicExpressionExtended
 
 def get_sknf_expression(table):
@@ -16,6 +17,12 @@ def get_sknf_expression(table):
 
     return " & ".join(f"({term})" for term in expression)
 
+def get_truth_table(table, results: List[int]):
+    for i in range(len(results)):
+        table[i+1][-1] = results[i]
+        
+    return table
+        
 truth_table = [
     ["A", "B", "C", "D", "R"],
     [0, 0, 0, 0, 1],
@@ -35,26 +42,14 @@ truth_table = [
     [1, 1, 1, 0, 0],
     [1, 1, 1, 1, 0],
 ]
+        
+result_columns = [[0, 0,1,1,0,0,0,0,0,0,0,0,1,1,0,0], 
+                  [1,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0], 
+                  [1,1,0,0,0,0,1,1,0,0,1,1,0,0,0,0],
+                  [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]]
 
-sdnf_expression = LogicExpressionExtended.dnfWithCarno(get_sknf_expression(truth_table))
-print(f"Логическое выражение в СДНФ: {sdnf_expression}")
 
-'''
-    ["x1", "x2", "x3", "x4", "y1", "y2", "y3", "y4"],
-    [0, 0, 0, 0, 0, 1, 1, 0],
-    [0, 0, 0, 1, 0, 1, 1, 1],
-    [0, 0, 1, 0, 1, 0, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0, 1],
-    [0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 1, 0, 0, 0, 1],
-    [0, 1, 1, 0, 0, 0, 1, 0],
-    [0, 1, 1, 1, 0, 0, 1, 1],
-    [1, 0, 0, 0, 0, 1, 0, 0],
-    [1, 0, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 1, 1, 0],
-    [1, 0, 1, 1, 0, 1, 1, 1],
-    [1, 1, 0, 0, 1, 0, 0, 0],
-    [1, 1, 0, 1, 1, 0, 0, 1],
-    [1, 1, 1, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 0, 0, 0, 1],
-'''
+for i in range(len(result_columns)):
+    iteration_truth_table = get_truth_table(truth_table, result_columns[i])
+    bit_sdnf = LogicExpressionExtended.dnfWithCarno(get_sknf_expression(iteration_truth_table))
+    print(f"Логическое выражение СДНФ для {i+1}-го бита: {bit_sdnf}")

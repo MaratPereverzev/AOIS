@@ -1,4 +1,3 @@
-
 from typing import List
 from Lab3.LogicExtended import LogicExpressionExtended
 
@@ -23,20 +22,31 @@ def get_truth_table(table, results: List[int]):
         table[i+1][-1] = results[i]
         
     return table
+        
 # Таблица истинности
 truth_table = [
-    ["A", "B", "C", "D"],
-    [0, 0, 0, 0],
-    [0, 0, 1, 0],
-    [0, 1, 0, 0],
-    [0, 1, 1, 1],
-    [1, 0, 0, 0],
-    [1, 0, 1, 1],
-    [1, 1, 0, 1],
-    [1, 1, 1, 1],
+    ["A", "B", "C", "D", "R"],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 1, 0],
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1],
+    [1, 0, 0, 1, 1],
+    [1, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1],
+    [1, 1, 0, 0, 1],
+    [1, 1, 0, 1, 1],
+    [1, 1, 1, 0, 1],
+    [1, 1, 1, 1, 0]
 ]
 
-result_columns=[[0,1,1,0,1,0,0,1], [0,0,0,1,0,1,1,1]]
+result_columns = [[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0], 
+                  [0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0], 
+                  [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]]
 
 for i in range(len(result_columns)):
     iteration_truth_table = get_truth_table(truth_table, result_columns[i])
