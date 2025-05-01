@@ -57,13 +57,13 @@ class LogicExpressionExtended (LogicExpression):
     
     for i in range(len(constituents) - 1):
       bondableIteration = False
-      for j in range(len(constituents)):
+      for j in range(i + 1, len(constituents)):
         if LogicExpressionExtended._isBondable(constituents[i], constituents[j], forCNF):
           bondableIteration = True
           if i < j: 
             callRecursive = True
             nextConstituent.append(f"{LogicExpression.OR_SEPARATOR if forCNF else LogicExpression.AND_SEPARATOR}".join(LogicExpressionExtended._getSimilarVariables(constituents[i], constituents[j], forCNF)))
-      if not bondableIteration and notFirstIteration:
+      if not bondableIteration:
         nextConstituent.append(constituents[i])
         
     if not bondableIteration and not callRecursive and notFirstIteration:
@@ -115,7 +115,7 @@ class LogicExpressionExtended (LogicExpression):
     for i in range(len(constituents)):
       subFormulaCount = 0
       subFormulaIndex = 0
-      
+
       for j in range(len(constituentsShortened)):
         currShortenedConstituent = constituentsShortened[j].replace("(","").replace(")","")
 
@@ -126,7 +126,7 @@ class LogicExpressionExtended (LogicExpression):
         if subFormulaCount > 1:
           break
 
-      if subFormulaCount == 1 and not constituentsShortened[subFormulaIndex] in result:
+      if subFormulaCount <= 1 and not constituentsShortened[subFormulaIndex] in result:
         result.append(constituentsShortened[subFormulaIndex])
 
     return result
@@ -144,7 +144,7 @@ class LogicExpressionExtended (LogicExpression):
         
       polish = LogicExpression.toPolishNotation(currShortened)
       
-      if LogicExpressionExtended.calculateExpBoost(polish) != 1:
+      if (LogicExpressionExtended.calculateExpBoost(polish) != 1 and not forCNF) or (LogicExpressionExtended.calculateExpBoost(polish) != 0 and not forCNF):
         result.append(constituent)
         
     return result
@@ -243,7 +243,9 @@ class LogicExpressionExtended (LogicExpression):
     return formula
    
   @staticmethod
-  def findRectangleGroups(carnoTable: List[List[int]], maxGroupSize: int, grayHorizontal: List[str], grayVertical: List[str], isCNF=False):
+  def findRectangleGroups(carnoTable: List[List[int]], maxGroupSize: int, 
+                      grayHorizontal: List[str], grayVertical: List[str], 
+                      isCNF=False):
     groups = []
     visited = set()
     rows = len(carnoTable)
@@ -259,34 +261,58 @@ class LogicExpressionExtended (LogicExpression):
     # Проверяем все возможные комбинации размеров
     for height in sizes:
         for width in sizes:
-            # Пропускаем слишком большие размеры
             if height > rows or width > cols:
                 continue
                 
-            # Проверяем все возможные позиции прямоугольника
-            for i in range(rows - height + 1):
-                for j in range(cols - width + 1):
-                    # Проверяем, состоит ли прямоугольник из единиц
-                    all_ones = True
+            # Проверяем все возможные позиции с учётом тороидальности
+            for i in range(rows):
+                for j in range(cols):
+                    all_correct = True
                     current_group = []
                     
-                    for x in range(i, i + height):
-                        for y in range(j, j + width):
-                            if carnoTable[x][y] != 1 and not isCNF or carnoTable[x][y] != 0 and isCNF:
-                                all_ones = False
+                    # Проверяем каждый пиксель в прямоугольнике
+                    for di in range(height):
+                        for dj in range(width):
+                            # Тороидальные координаты
+                            x = (i + di) % rows
+                            y = (j + dj) % cols
+                            
+                            # Проверка значения
+                            if (carnoTable[x][y] != 1 and not isCNF) or \
+                               (carnoTable[x][y] != 0 and isCNF):
+                                all_correct = False
                                 break
-                            current_group.append(grayVertical[x] + grayHorizontal[y])
-                        if not all_ones:
+                            
+                            # Добавляем переменную
+                            var = grayVertical[x] + grayHorizontal[y]
+                            current_group.append(var)
+                        
+                        if not all_correct:
                             break
                     
-                    # Если нашли прямоугольник и есть новые переменные
-                    if all_ones:
+                    # Добавляем группу, если она валидна и содержит новые переменные
+                    if all_correct:
                         new_vars = [var for var in current_group if var not in visited]
                         if new_vars:
                             groups.append(current_group)
                             visited.update(new_vars)
     
-    return groups
+    # Оптимизация: объединяем смежные группы
+    merged_groups = []
+    for group in groups:
+        merged = False
+        for i, merged_group in enumerate(merged_groups):
+            if set(group).issubset(set(merged_group)):
+                merged = True
+                break
+            if set(merged_group).issubset(set(group)):
+                merged_groups[i] = group
+                merged = True
+                break
+        if not merged:
+            merged_groups.append(group)
+    
+    return merged_groups
   
   @staticmethod
   def findGroups(exp: str, carnoTable: str, isCNF=False):
@@ -330,6 +356,7 @@ class LogicExpressionExtended (LogicExpression):
       for j in range(len(grayHorizontal)):
         carnoTable[i][j] = LogicExpressionExtended.result(exp, *grayVertical[i], *grayHorizontal[j])
         
+        
     return carnoTable
     
 
@@ -341,16 +368,22 @@ class LogicExpressionExtended (LogicExpression):
   def dnfWithCarno(exp: str):
     return LogicExpressionExtended.minimizeExpression(exp)
 
-#print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))
 #print("СКНФ и CДНФ\n")
-#print("СКНФ:", LogicExpression.buildCNF("(!A & B) | (!(C | D))"))
-#print("СДНФ:", LogicExpression.buildDNF("(!A & B) | (!(C | D))"))
+print("СКНФ:", LogicExpression.buildCNF("!A&!B|C&D&!E"))
+print("СДНФ:", LogicExpression.buildDNF("!A&!B|C&D&!E"))
+print()
+print(LogicExpressionExtended.dnfWithQuine("!A&!B|C&D&!E", "расчётный"))
+print(LogicExpressionExtended.cnfWithQuine("!A&!B|C&D&!E", "расчётный"))
+print()
+print(LogicExpressionExtended.dnfWithQuine("!A&!B|C&D&!E", "таблично-расчётный"))
+print(LogicExpressionExtended.cnfWithQuine("!A&!B|C&D&!E", "таблично-расчётный"))
+print()
+print(LogicExpressionExtended.dnfWithCarno("!A&!B|C&D&!E"))
+print(LogicExpressionExtended.cnfWithCarno("!A&!B|C&D&!E"))
 #print("-"*40,"\nТаблица истинности\n\n")
 #LogicExpression.printTruthTable("(A | B) & C")
 #print("-"*40,"\nМинимизация СКНФ\n\n")
-#print(LogicExpressionExtended.cnfWithQuine("(A | B) & C", "таблично-расчётный"))
 #print(LogicExpressionExtended.cnfWithCarno("(A | B) & C"))
 #print("-"*40,"\nМинимизация СДНФ\n\n")
 #print(LogicExpressionExtended.dnfWithQuine("(A | B) & C", "таблично-расчётный"))
-#print(LogicExpressionExtended.dnfWithQuine("(!A & B) | (!(C | D))", "расчётный"))
 #print(LogicExpressionExtended.dnfWithCarno("(A | B) & C"))
