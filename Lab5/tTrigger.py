@@ -51,5 +51,5 @@ result_columns = [[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
 for i in range(len(result_columns)):
     iteration_truth_table = get_truth_table(truth_table, result_columns[i])
     bit_sdnf = LogicExpressionExtended.dnfWithCarno(get_sdnf_expression(iteration_truth_table))
-    print(get_sdnf_expression(iteration_truth_table))
+    #print(get_sdnf_expression(iteration_truth_table))
     print(f"Логическое выражение СДНФ для {i+1}-го бита: {bit_sdnf}")
