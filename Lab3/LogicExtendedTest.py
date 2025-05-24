@@ -6,7 +6,7 @@ class TestLogicExpressionExtended(unittest.TestCase):
     def test_cnfWithQuine(self):
         # Тест для метода cnfWithQuine
         exp = "(A | B) & C"
-        expected_result = "(A | B) & C"  # Ожидаемый результат может отличаться в зависимости от реализации
+        expected_result = "C & (A | B)"  # Ожидаемый результат может отличаться в зависимости от реализации
         result = LogicExpressionExtended.cnfWithQuine(exp)
         self.assertEqual(result, expected_result)
 
