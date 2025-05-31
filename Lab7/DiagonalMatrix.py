@@ -56,8 +56,6 @@ class DiagonalMatrix:
                 self.write_word(j, word)
 
     def print_matrix(self):
-        print("matrix")
-        print(self.matrix)
         for row in self.matrix:
             print(''.join(str(bit) for bit in row))
 
