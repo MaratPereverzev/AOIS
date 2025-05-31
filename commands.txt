@@ -1,4 +1,7 @@
 python -m unittest discover Lab2 LogicTest.py
-coverage run -m unittest discover Lab2 LogicTest.py
+
+coverage run -m unittest discover Lab3 LogicExtendedTest.py
+coverage run -m unittest discover Lab6 test.py
+coverage run -m unittest discover Lab7 DiagonalMatrixTest.py
+
 coverage report
-python -m Lab3.main

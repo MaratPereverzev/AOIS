@@ -6,29 +6,37 @@ class TestLogicExpressionExtended(unittest.TestCase):
     def test_cnfWithQuine(self):
         # Тест для метода cnfWithQuine
         exp = "(A | B) & C"
-        expected_result = "C & (A | B)"  # Ожидаемый результат может отличаться в зависимости от реализации
-        result = LogicExpressionExtended.cnfWithQuine(exp)
+        expected_result = "(A | B) & C".split(" & ")
+        expected_result.sort()  # Ожидаемый результат может отличаться в зависимости от реализации
+        result = LogicExpressionExtended.cnfWithQuine(exp).split(" & ")
+        result.sort()
         self.assertEqual(result, expected_result)
 
     def test_dnfWithQuine(self):
         # Тест для метода dnfWithQuine
         exp = "(A | B) & C"
-        expected_result = "B & C | A & C"  # Ожидаемый результат может отличаться в зависимости от реализации
-        result = LogicExpressionExtended.dnfWithQuine(exp)
-        self.assertEqual(result, expected_result)
+        expected_result = "A & C | B & C".split(" | ")
+        expected_result.sort()  # Ожидаемый результат может отличаться в зависимости от реализации
+        result = LogicExpressionExtended.dnfWithQuine(exp).split(" | ")
+        result.sort()
+        self.assertListEqual(result, expected_result)
 
     def test_cnfWithCarno(self):
         # Тест для метода cnfWithCarno
         exp = "(A | B) & C"
-        expected_result = "(A | B) & C"  # Ожидаемый результат может отличаться в зависимости от реализации
-        result = LogicExpressionExtended.cnfWithCarno(exp)
-        self.assertEqual(result, expected_result)
+        expected_result = "(A | B) & C".split(" & ")
+        expected_result.sort()  # Ожидаемый результат может отличаться в зависимости от реализации
+        result = LogicExpressionExtended.cnfWithCarno(exp).split(" & ")
+        result.sort()
+        self.assertListEqual(result, expected_result)
 
     def test_dnfWithCarno(self):
         # Тест для метода dnfWithCarno
         exp = "(A | B) & C"
-        expected_result = "B & C | A & C"  # Ожидаемый результат может отличаться в зависимости от реализации
-        result = LogicExpressionExtended.dnfWithCarno(exp)
+        expected_result = "A & C | B & C".split(" | ")
+        expected_result.sort()  # Ожидаемый результат может отличаться в зависимости от реализации
+        result = LogicExpressionExtended.dnfWithCarno(exp).split(" | ")
+        result.sort()
         self.assertEqual(result, expected_result)
 
     def test_isBondable(self):
